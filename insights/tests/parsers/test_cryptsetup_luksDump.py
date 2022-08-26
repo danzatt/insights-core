@@ -42,7 +42,7 @@ Key Slot 4: DISABLED
 Key Slot 5: DISABLED
 Key Slot 6: DISABLED
 Key Slot 7: DISABLED
-"""
+""" # noqa
 
 LUKS2_dump = """LUKS header information
 Version:       	2
@@ -120,7 +120,7 @@ Digests:
 	            4d cd 4d f9 de 69 39 97 d5 b3 ac c4 fd c5 ca 50 
 	Digest:     21 aa b3 dc 9d 46 9b 0f 3a 0f 57 13 80 c6 0b bf 
 	            67 66 9e 73 ed 7d 09 2c 3d b6 fa f4 fe 0c ce 67 
-"""
+""" # noqa
 
 LUKS_bad_dump = "Device /dev/nvme0n1p1 is not a valid LUKS device."
 
@@ -132,6 +132,7 @@ def test_cryptsetup_luksDump_LUKS1():
     assert LUKS1_parsed["header"]["Version"] == "1"
     assert LUKS1_parsed["Key Slot 0"]["status"] == "ENABLED"
     assert LUKS1_parsed["Key Slot 7"]["status"] == "DISABLED"
+
 
 def test_cryptsetup_luksDump_LUKS2():
     LUKS2_parsed = cryptsetup_luksDump.LUKS_Dump(context_wrap(LUKS2_dump)).dump
@@ -145,6 +146,7 @@ def test_cryptsetup_luksDump_LUKS2():
 
     assert LUKS2_parsed["Tokens"]["0"]["type"] == "systemd-tpm2"
     assert LUKS2_parsed["Keyslots"]["0"]["type"] == "luks2"
+
 
 def test_cryptsetup_luksDump_bad():
     assert cryptsetup_luksDump.LUKS_Dump(context_wrap(LUKS_bad_dump)).dump is None

@@ -156,7 +156,8 @@ class LUKS_Dump(Parser):
             representing the header, data segments, keyslots, digests
             and tokens.
 
-    """
+    """ # noqa
+
     def parse_dump(self, text):
         self.dump = None
         header = LUKS_Header(text)
@@ -170,6 +171,6 @@ class LUKS_Dump(Parser):
 
     def parse_content(self, content):
         try:
-            self.dump = self.parse_dump("\n".join(content).replace("\t", " "*8) + "\n")
+            self.dump = self.parse_dump("\n".join(content).replace("\t", " " * 8) + "\n")
         except:
             self.dump = None
