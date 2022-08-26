@@ -1,3 +1,4 @@
+import doctest
 import pytest
 
 from insights.parsers import cryptsetup_luksDump
@@ -158,3 +159,11 @@ def test_cryptsetup_luksDump_bad():
         cryptsetup_luksDump.LUKS_Dump(context_wrap(LUKS_bad_dump)).dump
     with pytest.raises(SkipComponent):
         cryptsetup_luksDump.LUKS_Dump(context_wrap("")).dump
+
+
+def test_doc_examples():
+    env = {
+            'parsed_result': cryptsetup_luksDump.LUKS_Dump(context_wrap(LUKS2_dump)),
+          }
+    failed, total = doctest.testmod(cryptsetup_luksDump, globs=env)
+    assert failed == 0

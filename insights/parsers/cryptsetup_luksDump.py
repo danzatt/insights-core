@@ -100,6 +100,8 @@ class LUKS_Dump(Parser):
                 Time cost:  7
                 Memory:     1048576
                 Threads:    4
+                Salt:       3d c4 1b 52 fe 1c 90 d8 2a 35 b2 62 34 e9 0a 59 
+                            e9 0e 48 57 b2 dd 45 9e ed 9a 33 1e 07 cd 2a 19 
                 AF stripes: 4000
                 AF hash:    sha256
                 Area offset:32768 [bytes]
@@ -112,38 +114,45 @@ class LUKS_Dump(Parser):
           0: pbkdf2
                 Hash:       sha256
                 Iterations: 129774
+                Salt:       e6 31 d5 74 e0 65 83 82 35 03 29 56 0e 80 36 5c 
+                            4d cd 4d f9 de 69 39 97 d5 b3 ac c4 fd c5 ca 50 
+                Digest:     21 aa b3 dc 9d 46 9b 0f 3a 0f 57 13 80 c6 0b bf 
+                            67 66 9e 73 ed 7d 09 2c 3d b6 fa f4 fe 0c ce 67 
 
     Examples:
-        >>> type(dump)
+        >>> type(parsed_result)
         <class 'insights.parsers.cryptsetup_luksDump.LUKS_Dump'>
 
-        >>> dump.dump["header"]
-        {'Version': '2',
-         'Epoch': '6',
-         'Metadata area': '16384 [bytes]',
+        >>> from pprint import pprint
+        >>> pprint(parsed_result.dump["header"])
+        {'Epoch': '6',
+         'Flags': '(no flags)',
          'Keyslots area': '16744448 [bytes]',
-         'UUID': 'cfbcc942-e06b-4c4a-952f-e9c9b2011c27',
          'Label': '(no label)',
+         'Metadata area': '16384 [bytes]',
          'Subsystem': '(no subsystem)',
-         'Flags': '(no flags)'}
+         'UUID': 'cfbcc942-e06b-4c4a-952f-e9c9b2011c27',
+         'Version': '2'}
 
-        >>> dump.dump["Keyslots"]["0"]
-        {'Key': '512 bits',
-         'Priority': 'normal',
+        >>> pprint(parsed_result.dump["Keyslots"]["0"])
+        {'AF hash': 'sha256',
+         'AF stripes': '4000',
+         'Area length': '258048 [bytes]',
+         'Area offset': '32768 [bytes]',
          'Cipher': 'aes-xts-plain64',
          'Cipher key': '512 bits',
-         'PBKDF': 'argon2id',
-         'Time cost': '7',
-         'Memory': '1048576',
-         'Threads': '4',
-         'AF stripes': '4000',
-         'AF hash': 'sha256',
-         'Area offset': '32768 [bytes]',
-         'Area length': '258048 [bytes]',
          'Digest ID': '0',
+         'Key': '512 bits',
+         'Memory': '1048576',
+         'PBKDF': 'argon2id',
+         'Priority': 'normal',
+         'Salt': '3d c4 1b 52 fe 1c 90 d8 2a 35 b2 62 34 e9 0a 59 e9 0e 48 57 b2 dd 45 '
+                 '9e ed 9a 33 1e 07 cd 2a 19',
+         'Threads': '4',
+         'Time cost': '7',
          'type': 'luks2'}
 
-        >>> dump.dump["Tokens"]["0"]["type"]
+        >>> parsed_result.dump["Tokens"]["0"]["type"]
         'systemd-tpm2'
 
 
