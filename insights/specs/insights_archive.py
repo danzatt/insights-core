@@ -38,7 +38,6 @@ class InsightsArchiveSpecs(Specs):
         "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_.etc.ipa_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName",
         "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName"
     ])
-    cryptsetup_luksDump = glob_file("insights_commands/bash_-c_.usr.sbin.cryptsetup_--disable-external-tokens_luksDump*")
     chkconfig = simple_file("insights_commands/chkconfig_--list")
     chronyc_sources = simple_file("insights_commands/chronyc_sources")
     corosync_cmapctl = glob_file("insights_commands/corosync-cmapctl*")
