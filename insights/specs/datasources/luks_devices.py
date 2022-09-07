@@ -59,9 +59,6 @@ def Luks_data_sources(broker):
     datasources = []
 
     for command in broker[LocalSpecs.cryptsetup_luksDump_commands]:
-        print(command.content)
-        print(type(command.content))
-
         regex = re.compile(r'[\t ]*(MK digest:|MK salt:|Salt:|Digest:)(\s*([a-z0-9][a-z0-9] ){16}\n)*(\s*([a-z0-9][a-z0-9] )+\n)?', flags=re.IGNORECASE)
         filtered_content = regex.sub("", "\n".join(command.content) + "\n")
 
