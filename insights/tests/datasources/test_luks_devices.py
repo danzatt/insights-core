@@ -48,7 +48,7 @@ Key Slot 4: DISABLED
 Key Slot 5: DISABLED
 Key Slot 6: DISABLED
 Key Slot 7: DISABLED
-""" # noqa
+"""  # noqa
 
 LUKS2_DUMP = """LUKS header information
 Version:       	2
@@ -128,7 +128,7 @@ Digests:
                     de ad be ef 
 	Digest:     ca fe ba be 9d 46 9b 0f 3a 0f 57 13 de ad be ef 
 	            ca fe ba be ed 7d 09 2c 3d b6 fa f4 de ad be ef 
-""" # noqa
+"""  # noqa
 
 BLKID_INFO = """
 /dev/nvme0n1p3: UUID="3676157d-f2f5-465c-a4c3-3c2a52c8d3f4" TYPE="crypto_LUKS" PARTUUID="d403bcbd-0eea-4bff-95b9-2237740f5c8b"

@@ -160,7 +160,7 @@ class LUKS_Dump(Parser):
         dump(dict of dicts): A top level dict containing the dictionaries
             representing the header, data segments, keyslots, digests
             and tokens.
-    """ # noqa
+    """  # noqa
 
     def __init__(self, context):
         self.parse_dump = DocParser()

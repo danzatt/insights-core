@@ -46,7 +46,7 @@ Key Slot 4: DISABLED
 Key Slot 5: DISABLED
 Key Slot 6: DISABLED
 Key Slot 7: DISABLED
-""" # noqa
+"""  # noqa
 
 LUKS2_dump = """LUKS header information
 Version:       	2
@@ -123,8 +123,8 @@ Digests:
 	Salt:       e6 31 d5 74 e0 65 83 82 35 03 29 56 0e 80 36 5c 
 	            4d cd 4d f9 de 69 39 97 d5 b3 ac c4 fd c5 ca 50 
 	Digest:     21 aa b3 dc 9d 46 9b 0f 3a 0f 57 13 80 c6 0b bf 
-	            67 66 9e 73 ed 7d 09 2c 3d b6 fa f4 fe 0c ce 67 
-""" # noqa
+	            67 66 9e 73 ed 7d 09 
+"""  # noqa
 
 LUKS_bad_dump = "Device /dev/nvme0n1p1 is not a valid LUKS device."
 
