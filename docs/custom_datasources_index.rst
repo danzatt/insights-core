@@ -101,7 +101,7 @@ insights.specs.datasources.lpstat
 
 
 insights.specs.datasources.luks_devices
----------------------------------
+---------------------------------------
 
 .. automodule:: insights.specs.datasources.luks_devices
     :members: LUKS_block_devices, LocalSpecs, LUKS_data_sources

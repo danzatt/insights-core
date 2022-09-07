@@ -1,6 +1,6 @@
 """
-LUKS_Dump - command ``cryptsetup luksDump``
-============================================================
+Luks_dump - command ``cryptsetup luksDump``
+===========================================
 This class provides parsing for the output of cryptsetup luksDump
 <device_name>. Outputs from LUKS1 and LUKS2 are supported.
 """
