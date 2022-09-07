@@ -76,7 +76,7 @@ Keyslots:
 	Memory:     1048576
 	Threads:    4
 	Salt:       3d c4 1b 52 fe 1c 90 d8 2a 35 b2 62 34 e9 0a 59 
-	            e9 0e 48 57 b2 dd 45 9e ed 9a 33 1e 07 cd 2a 19 
+	            e9 0e 48 57 b2 dd 45 
 	AF stripes: 4000
 	AF hash:    sha256
 	Area offset:32768 [bytes]
@@ -92,7 +92,7 @@ Keyslots:
 	Memory:     1048576
 	Threads:    4
 	Salt:       bb b4 33 41 c1 94 15 86 2a e9 26 f8 d8 16 83 b1 
-	            d0 00 f9 25 05 2d 80 c9 56 e8 4d 6f 75 a2 d5 bf 
+	            d0 00 f9 25 05 2d 80 
 	AF stripes: 4000
 	AF hash:    sha256
 	Area offset:290816 [bytes]
@@ -107,7 +107,7 @@ Keyslots:
 	Hash:       sha512
 	Iterations: 1000
 	Salt:       a8 53 27 a8 d7 8f a6 de a0 cb a4 d1 d4 2c 60 19 
-	            f0 32 a2 b0 fb 53 43 06 e8 83 90 93 65 ea 7d 8c 
+	            f0 32 a2 b0 fb 53 43 
 	AF stripes: 4000
 	AF hash:    sha512
 	Area offset:548864 [bytes]
@@ -121,7 +121,7 @@ Digests:
 	Hash:       sha256
 	Iterations: 129774
 	Salt:       e6 31 d5 74 e0 65 83 82 35 03 29 56 0e 80 36 5c 
-	            4d cd 4d f9 de 69 39 97 d5 b3 ac c4 fd c5 ca 50 
+	            4d cd 4d f9 de 69 39 
 	Digest:     21 aa b3 dc 9d 46 9b 0f 3a 0f 57 13 80 c6 0b bf 
 	            67 66 9e 73 ed 7d 09 
 """  # noqa
