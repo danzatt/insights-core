@@ -36,19 +36,19 @@ class DocParser(object):
         FirstLevelKVPair = FirstIndent >> Key + Value1
         SecondLevelKVPair = SecondIndent >> WithIndent(Key + Value)
 
-        LUKS2SectionName = Key << Char("\n")
-        LUKS2SectionEntry = (FirstLevelKVPair + Many(SecondLevelKVPair).map(dict)).map(self.convert_type)
-        LUKS2Section = LUKS2SectionName + Many(LUKS2SectionEntry).map(dict) << Opt(Many(Char("\n")))
-        LUKS2Body = Many(LUKS2Section, lower=1)
+        Luks2SectionName = Key << Char("\n")
+        Luks2SectionEntry = (FirstLevelKVPair + Many(SecondLevelKVPair).map(dict)).map(self.convert_type)
+        Luks2Section = Luks2SectionName + Many(Luks2SectionEntry).map(dict) << Opt(Many(Char("\n")))
+        Luks2Body = Many(Luks2Section, lower=1)
 
-        LUKS1Section = ZeroLevelKVPair + Many(SecondLevelKVPair).map(dict) << Opt(Many(Char("\n")))
-        LUKS1Body = Many(LUKS1Section.map(self.convert_status), lower=1)
+        Luks1Section = ZeroLevelKVPair + Many(SecondLevelKVPair).map(dict) << Opt(Many(Char("\n")))
+        Luks1Body = Many(Luks1Section.map(self.convert_status), lower=1)
 
         KVBlock = Many(Key + Value1).map(dict)
-        LUKS_Header = (FirstLine + KVBlock) << Opt(Many(Char("\n")))
+        Luks_Header = (FirstLine + KVBlock) << Opt(Many(Char("\n")))
 
-        # LUKS2Body has to go first, because LUKS1Body consumes also valid LUKS2 bodies
-        self.Top = Lift(self.join_header_and_body) * LUKS_Header * (LUKS2Body | LUKS1Body) << EOF
+        # Luks2Body has to go first, because Luks1Body consumes also valid Luks2 bodies
+        self.Top = Lift(self.join_header_and_body) * Luks_Header * (Luks2Body | Luks1Body) << EOF
 
     def join_header_and_body(self, header, body):
         return dict([header] + body)
@@ -69,7 +69,7 @@ class DocParser(object):
 
 
 @parser(Specs.cryptsetup_luksDump)
-class LUKS_Dump(Parser):
+class Luks_dump(Parser):
     """
     Sample input data is in the format::
 
@@ -121,7 +121,7 @@ class LUKS_Dump(Parser):
 
     Examples:
         >>> type(parsed_result)
-        <class 'insights.parsers.cryptsetup_luksDump.LUKS_Dump'>
+        <class 'insights.parsers.cryptsetup_luksDump.Luks_dump'>
 
         >>> from pprint import pprint
         >>> pprint(parsed_result.dump["header"])
@@ -163,7 +163,7 @@ class LUKS_Dump(Parser):
 
     def __init__(self, context):
         self.parse_dump = DocParser()
-        super(LUKS_Dump, self).__init__(context)
+        super(Luks_dump, self).__init__(context)
 
     def parse_content(self, content):
         if len(content) == 0 or (len(content) == 1 and "not a valid LUKS" in content[0]):

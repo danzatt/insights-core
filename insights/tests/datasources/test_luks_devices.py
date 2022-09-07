@@ -1,7 +1,7 @@
 from mock.mock import Mock
 
 from insights.parsers.blkid import BlockIDInfo
-from insights.specs.datasources.luks_devices import LocalSpecs, LUKS_data_sources, LUKS_block_devices
+from insights.specs.datasources.luks_devices import LocalSpecs, Luks_data_sources, Luks_block_devices
 from insights.tests import context_wrap
 
 
@@ -144,7 +144,7 @@ def test_luks_devices_listing():
     blkid = BlockIDInfo(context_wrap(BLKID_INFO))
     broker = {BlockIDInfo: blkid}
 
-    luks_devices = LUKS_block_devices(broker)
+    luks_devices = Luks_block_devices(broker)
     assert set(luks_devices) == set(["/dev/loop0", "/dev/nvme0n1p3"])
 
 
@@ -153,7 +153,7 @@ def test_luks1_filtering():
     command.content = LUKS1_DUMP.splitlines()
     command.cmd = "cryptsetup luksDump /dev/sda"
     broker = {LocalSpecs.cryptsetup_luksDump_commands: [command]}
-    result = LUKS_data_sources(broker)
+    result = Luks_data_sources(broker)
 
     assert len(result) == 1
 
@@ -170,7 +170,7 @@ def test_luks2_filtering():
     command.content = LUKS2_DUMP.splitlines()
     command.cmd = "cryptsetup luksDump /dev/sda"
     broker = {LocalSpecs.cryptsetup_luksDump_commands: [command]}
-    result = LUKS_data_sources(broker)
+    result = Luks_data_sources(broker)
 
     assert len(result) == 1
 

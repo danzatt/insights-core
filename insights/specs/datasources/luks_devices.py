@@ -11,7 +11,7 @@ import re
 
 
 @datasource(BlockIDInfo, HostContext)
-def LUKS_block_devices(broker):
+def Luks_block_devices(broker):
     """
     This datasource provides a list of LUKS encrypted device.
 
@@ -36,14 +36,14 @@ def LUKS_block_devices(broker):
     raise SkipComponent
 
 
-@datasource(LUKS_block_devices)
+@datasource(Luks_block_devices)
 class LocalSpecs(Specs):
     """ Local specs used only by LUKS_data_sources datasource. """
-    cryptsetup_luksDump_commands = foreach_execute(LUKS_block_devices, "cryptsetup luksDump --disable-external-tokens %s")
+    cryptsetup_luksDump_commands = foreach_execute(Luks_block_devices, "cryptsetup luksDump --disable-external-tokens %s")
 
 
 @datasource(HostContext, LocalSpecs.cryptsetup_luksDump_commands)
-def LUKS_data_sources(broker):
+def Luks_data_sources(broker):
     """
     This datasource provides the output of 'cryptsetup luksDump' command for
     every LUKS encrypted device on the system. The digest and salt fields are
