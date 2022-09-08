@@ -1,6 +1,6 @@
 """
-Luks_dump - command ``cryptsetup luksDump``
-===========================================
+LuksDump - command ``cryptsetup luksDump``
+==========================================
 This class provides parsing for the output of cryptsetup luksDump
 <device_name>. Outputs from LUKS1 and LUKS2 are supported.
 """
@@ -45,10 +45,10 @@ class DocParser(object):
         Luks1Body = Many(Luks1Section.map(self.convert_status), lower=1)
 
         KVBlock = Many(Key + Value1).map(dict)
-        Luks_Header = (FirstLine + KVBlock) << Opt(Many(Char("\n")))
+        LuksHeader = (FirstLine + KVBlock) << Opt(Many(Char("\n")))
 
         # Luks2Body has to go first, because Luks1Body consumes also valid Luks2 bodies
-        self.Top = Lift(self.join_header_and_body) * Luks_Header * (Luks2Body | Luks1Body) << EOF
+        self.Top = Lift(self.join_header_and_body) * LuksHeader * (Luks2Body | Luks1Body) << EOF
 
     def join_header_and_body(self, header, body):
         return dict([header] + body)
@@ -69,7 +69,7 @@ class DocParser(object):
 
 
 @parser(Specs.cryptsetup_luksDump)
-class Luks_dump(Parser):
+class LuksDump(Parser):
     """
     Sample input data is in the format::
 
@@ -121,7 +121,7 @@ class Luks_dump(Parser):
 
     Examples:
         >>> type(parsed_result)
-        <class 'insights.parsers.cryptsetup_luksDump.Luks_dump'>
+        <class 'insights.parsers.cryptsetup_luksDump.LuksDump'>
 
         >>> from pprint import pprint
         >>> pprint(parsed_result.dump["header"])
@@ -163,7 +163,7 @@ class Luks_dump(Parser):
 
     def __init__(self, context):
         self.parse_dump = DocParser()
-        super(Luks_dump, self).__init__(context)
+        super(LuksDump, self).__init__(context)
 
     def parse_content(self, content):
         if len(content) == 0 or (len(content) == 1 and "not a valid LUKS" in content[0]):

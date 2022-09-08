@@ -11,7 +11,7 @@ import re
 
 
 @datasource(BlockIDInfo, HostContext)
-def Luks_block_devices(broker):
+def luks_block_devices(broker):
     """
     This datasource provides a list of LUKS encrypted device.
 
@@ -36,14 +36,14 @@ def Luks_block_devices(broker):
     raise SkipComponent
 
 
-@datasource(Luks_block_devices)
+@datasource(luks_block_devices)
 class LocalSpecs(Specs):
     """ Local specs used only by LUKS_data_sources datasource. """
-    cryptsetup_luksDump_commands = foreach_execute(Luks_block_devices, "cryptsetup luksDump --disable-external-tokens %s")
+    cryptsetup_luks_dump_commands = foreach_execute(luks_block_devices, "cryptsetup luksDump --disable-external-tokens %s")
 
 
-@datasource(HostContext, LocalSpecs.cryptsetup_luksDump_commands)
-def Luks_data_sources(broker):
+@datasource(HostContext, LocalSpecs.cryptsetup_luks_dump_commands)
+def luks_data_sources(broker):
     """
     This datasource provides the output of 'cryptsetup luksDump' command for
     every LUKS encrypted device on the system. The digest and salt fields are
@@ -58,7 +58,7 @@ def Luks_data_sources(broker):
     """
     datasources = []
 
-    for command in broker[LocalSpecs.cryptsetup_luksDump_commands]:
+    for command in broker[LocalSpecs.cryptsetup_luks_dump_commands]:
         regex = re.compile(r'[\t ]*(MK digest:|MK salt:|Salt:|Digest:)(\s*([a-z0-9][a-z0-9] ){16}\n)*(\s*([a-z0-9][a-z0-9] )+\n)?', flags=re.IGNORECASE)
         filtered_content = regex.sub("", "\n".join(command.content) + "\n")
 

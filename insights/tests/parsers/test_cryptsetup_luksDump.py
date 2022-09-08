@@ -129,41 +129,41 @@ Digests:
 LUKS_BAD_DUMP = "Device /dev/nvme0n1p1 is not a valid LUKS device."
 
 
-def test_cryptsetup_luksDump_Luks1():
-    Luks1Parsed = cryptsetup_luksDump.Luks_dump(context_wrap(LUKS1_DUMP))
-    print(Luks1Parsed.dump)
-    assert Luks1Parsed.dump is not None
-    assert set(Luks1Parsed.dump.keys()) == set(["header"] + ["Key Slot " + str(x) for x in range(8)])
-    assert Luks1Parsed.dump["header"]["Version"] == "1"
-    assert Luks1Parsed.dump["Key Slot 0"]["status"] == "ENABLED"
-    assert Luks1Parsed.dump["Key Slot 7"]["status"] == "DISABLED"
+def test_cryptsetup_luks_dump_luks1():
+    luks1_parsed = cryptsetup_luksDump.LuksDump(context_wrap(LUKS1_DUMP))
+    print(luks1_parsed.dump)
+    assert luks1_parsed.dump is not None
+    assert set(luks1_parsed.dump.keys()) == set(["header"] + ["Key Slot " + str(x) for x in range(8)])
+    assert luks1_parsed.dump["header"]["Version"] == "1"
+    assert luks1_parsed.dump["Key Slot 0"]["status"] == "ENABLED"
+    assert luks1_parsed.dump["Key Slot 7"]["status"] == "DISABLED"
 
 
-def test_cryptsetup_luksDump_Luks2():
-    Luks2_parsed = cryptsetup_luksDump.Luks_dump(context_wrap(LUKS2_DUMP))
-    assert Luks2_parsed.dump is not None
-    assert set(Luks2_parsed.dump.keys()) == set(["header", "Data segments", "Keyslots", "Tokens", "Digests"])
-    assert Luks2_parsed.dump["header"]["Version"] == "2"
-    assert len(Luks2_parsed.dump["Keyslots"].keys()) == 3
-    assert Luks2_parsed.dump["Keyslots"]["0"]["type"] == "luks2"
-    assert len(Luks2_parsed.dump["Data segments"].keys()) == 1
-    assert len(Luks2_parsed.dump["Tokens"].keys()) == 1
-    assert len(Luks2_parsed.dump["Digests"].keys()) == 1
+def test_cryptsetup_luks_dump_luks2():
+    luks2_parsed = cryptsetup_luksDump.LuksDump(context_wrap(LUKS2_DUMP))
+    assert luks2_parsed.dump is not None
+    assert set(luks2_parsed.dump.keys()) == set(["header", "Data segments", "Keyslots", "Tokens", "Digests"])
+    assert luks2_parsed.dump["header"]["Version"] == "2"
+    assert len(luks2_parsed.dump["Keyslots"].keys()) == 3
+    assert luks2_parsed.dump["Keyslots"]["0"]["type"] == "luks2"
+    assert len(luks2_parsed.dump["Data segments"].keys()) == 1
+    assert len(luks2_parsed.dump["Tokens"].keys()) == 1
+    assert len(luks2_parsed.dump["Digests"].keys()) == 1
 
-    assert Luks2_parsed.dump["Tokens"]["0"]["type"] == "systemd-tpm2"
-    assert Luks2_parsed.dump["Keyslots"]["0"]["type"] == "luks2"
+    assert luks2_parsed.dump["Tokens"]["0"]["type"] == "systemd-tpm2"
+    assert luks2_parsed.dump["Keyslots"]["0"]["type"] == "luks2"
 
 
-def test_cryptsetup_luksDump_bad():
+def test_cryptsetup_luks_dump_bad():
     with pytest.raises(SkipComponent):
-        cryptsetup_luksDump.Luks_dump(context_wrap(LUKS_BAD_DUMP)).dump
+        cryptsetup_luksDump.LuksDump(context_wrap(LUKS_BAD_DUMP)).dump
     with pytest.raises(SkipComponent):
-        cryptsetup_luksDump.Luks_dump(context_wrap("")).dump
+        cryptsetup_luksDump.LuksDump(context_wrap("")).dump
 
 
 def test_doc_examples():
     env = {
-            'parsed_result': cryptsetup_luksDump.Luks_dump(context_wrap(LUKS2_DUMP)),
+            'parsed_result': cryptsetup_luksDump.LuksDump(context_wrap(LUKS2_DUMP)),
           }
     failed, total = doctest.testmod(cryptsetup_luksDump, globs=env)
     assert failed == 0
