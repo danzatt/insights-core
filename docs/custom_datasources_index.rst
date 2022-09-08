@@ -104,7 +104,7 @@ insights.specs.datasources.luks_devices
 ---------------------------------------
 
 .. automodule:: insights.specs.datasources.luks_devices
-    :members: Luks_block_devices, LocalSpecs, Luks_data_sources
+    :members: luks_block_devices, luks_data_sources, LocalSpecs
     :show-inheritance:
     :undoc-members:
 
