@@ -39,7 +39,50 @@ def luks_block_devices(broker):
 @datasource(luks_block_devices)
 class LocalSpecs(Specs):
     """ Local specs used only by LUKS_data_sources datasource. """
-    cryptsetup_luks_dump_commands = foreach_execute(luks_block_devices, "cryptsetup luksDump --disable-external-tokens %s")
+    cryptsetup_luks_dump_commands = foreach_execute(luks_block_devices, "cryptsetup luksDump %s")
+
+
+def line_indentation(line):
+    """
+    Compute line indentation level
+
+    Arguments:
+        line(str): The whole line
+
+    Returns:
+        int: the number of spaces the line is indentated by
+    """
+    line = line.replace("\t", " " * 8)
+    return len(line) - len(line.lstrip())
+
+
+def filter_token_lines(lines):
+    """
+    Filter out token descriptions to keep just the Keyslot filed
+
+    Arguments:
+        lines(list): List of lines of the luksDump output
+
+    Returns:
+        list: The original lines, except the tokens section only contains only token name and associated keyslot
+    """
+    in_tokens = False
+    remove_indices = []
+
+    for i, line in enumerate(lines):
+        if line == "Tokens:":
+            in_tokens = True
+            continue
+
+        if in_tokens and line_indentation(line) == 0:
+            in_tokens = False
+
+        if not in_tokens or line_indentation(line) == 2 or line.startswith("\tKeyslot:"):
+            continue
+
+        remove_indices.append(i)
+
+    return [i for j, i in enumerate(lines) if j not in remove_indices]
 
 
 @datasource(HostContext, LocalSpecs.cryptsetup_luks_dump_commands)
@@ -59,8 +102,10 @@ def luks_data_sources(broker):
     datasources = []
 
     for command in broker[LocalSpecs.cryptsetup_luks_dump_commands]:
+        lines_without_tokens = filter_token_lines(command.content)
+
         regex = re.compile(r'[\t ]*(MK digest:|MK salt:|Salt:|Digest:)(\s*([a-z0-9][a-z0-9] ){16}\n)*(\s*([a-z0-9][a-z0-9] )+\n)?', flags=re.IGNORECASE)
-        filtered_content = regex.sub("", "\n".join(command.content) + "\n")
+        filtered_content = regex.sub("", "\n".join(lines_without_tokens) + "\n")
 
         datasources.append(
             DatasourceProvider(content=filtered_content, relative_path="insights_commands/" + command.cmd.replace("/", ".").replace(" ", "_"))
