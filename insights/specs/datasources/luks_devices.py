@@ -1,6 +1,7 @@
 """
 Custom datasource for gathering a list of encrypted LUKS block devices and their properties.
 """
+from insights.components.cryptsetup import HasCryptsetupWithTokens, HasCryptsetupWithoutTokens
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
@@ -39,7 +40,8 @@ def luks_block_devices(broker):
 @datasource(luks_block_devices)
 class LocalSpecs(Specs):
     """ Local specs used only by LUKS_data_sources datasource. """
-    cryptsetup_luks_dump_commands = foreach_execute(luks_block_devices, "cryptsetup luksDump %s")
+    cryptsetup_luks_dump_token_commands = foreach_execute(luks_block_devices, "cryptsetup luksDump --disable-external-tokens %s", deps=[HasCryptsetupWithTokens])
+    cryptsetup_luks_dump_commands = foreach_execute(luks_block_devices, "cryptsetup luksDump %s", deps=[HasCryptsetupWithoutTokens])
 
 
 def line_indentation(line):
@@ -85,7 +87,7 @@ def filter_token_lines(lines):
     return [i for j, i in enumerate(lines) if j not in remove_indices]
 
 
-@datasource(HostContext, LocalSpecs.cryptsetup_luks_dump_commands)
+@datasource(HostContext, [LocalSpecs.cryptsetup_luks_dump_token_commands, LocalSpecs.cryptsetup_luks_dump_commands])
 def luks_data_sources(broker):
     """
     This datasource provides the output of 'cryptsetup luksDump' command for
@@ -101,7 +103,13 @@ def luks_data_sources(broker):
     """
     datasources = []
 
-    for command in broker[LocalSpecs.cryptsetup_luks_dump_commands]:
+    commands = []
+    if LocalSpecs.cryptsetup_luks_dump_token_commands in broker:
+        commands.extend(broker[LocalSpecs.cryptsetup_luks_dump_token_commands])
+    if LocalSpecs.cryptsetup_luks_dump_commands in broker:
+        commands.extend(broker[LocalSpecs.cryptsetup_luks_dump_commands])
+
+    for command in commands:
         lines_without_tokens = filter_token_lines(command.content)
 
         regex = re.compile(r'[\t ]*(MK digest:|MK salt:|Salt:|Digest:)(\s*([a-z0-9][a-z0-9] ){16}\n)*(\s*([a-z0-9][a-z0-9] )+\n)?', flags=re.IGNORECASE)
