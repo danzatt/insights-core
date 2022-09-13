@@ -3,7 +3,8 @@ from mock.mock import Mock
 
 from insights import SkipComponent
 from insights.parsers.blkid import BlockIDInfo
-from insights.specs.datasources.luks_devices import LocalSpecs, luks_data_sources, luks_block_devices
+from insights.parsers.cryptsetup_luksDump import LuksDump
+from insights.specs.datasources.luks_devices import LocalSpecs, luks_data_sources, luks_block_devices, luks1_block_devices
 from insights.tests import context_wrap
 
 
@@ -178,6 +179,25 @@ def test_luks_data_sources():
     broker = {LocalSpecs.cryptsetup_luks_dump_commands: []}
     with pytest.raises(SkipComponent):
         luks_data_sources(broker)
+
+
+def test_luks1_devices_listing():
+    luks1_device = LuksDump(context_wrap(LUKS1_DUMP))
+    luks2_device = LuksDump(context_wrap(LUKS2_DUMP))
+
+    broker = {LuksDump: [luks1_device, luks2_device]}
+    luks_devices = luks1_block_devices(broker)
+
+    # only the LUKS1 device's UUID is returned
+    assert luks_devices == ["/dev/disk/by-uuid/263902da-5f0c-43a9-82eb-cc6f14d90448"]
+
+    with pytest.raises(SkipComponent):
+        broker = {LuksDump: []}
+        luks_devices = luks1_block_devices(broker)
+
+    with pytest.raises(SkipComponent):
+        broker = {LuksDump: [luks2_device]}
+        luks_devices = luks1_block_devices(broker)
 
 
 def test_luks1_filtering():

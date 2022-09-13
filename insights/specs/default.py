@@ -372,6 +372,7 @@ class DefaultSpecs(Specs):
     lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
     lsscsi = simple_command("/usr/bin/lsscsi")
     lsvmbus = simple_command("/usr/sbin/lsvmbus -vv")
+    luksmeta = foreach_execute(luks_devices.luks1_block_devices, "luksmeta show -d %s")
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
     lvmconfig = first_of([
         simple_command("/usr/sbin/lvmconfig --type full"),
