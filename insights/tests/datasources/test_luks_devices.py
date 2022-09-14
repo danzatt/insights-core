@@ -1,5 +1,7 @@
+import pytest
 from mock.mock import Mock
 
+from insights import SkipComponent
 from insights.parsers.blkid import BlockIDInfo
 from insights.specs.datasources.luks_devices import LocalSpecs, luks_data_sources, luks_block_devices
 from insights.tests import context_wrap
@@ -118,6 +120,15 @@ Keyslots:
 	Digest ID:  0
 Tokens:
   0: systemd-tpm2
+        tpm2-pcrs:  7
+        tpm2-bank:  sha256
+        tpm2-primary-alg:  ecc
+        tpm2-blob:  00 9e 00 20 bd 97 78 70 3f 3a 5b 93 d4 8f dc ed
+                    10 16 b2 ce f5 f7 a2 c8 63 f6 19 12 63 7a f2 94
+                    26 f1 b6 1b 00 10 2e 36 26 c1 3b f7 1e 8d 86 55
+        tpm2-policy-hash:
+                    df 06 80 28 e7 67 b1 d0 34 f4 de 1b 8e ac 33 5a
+                    df 06 80 28 e7 67 b1 d0 34 f4 de 1b 8e ac 33 5a
 	Keyslot:    2
 Digests:
   0: pbkdf2
@@ -139,13 +150,34 @@ BLKID_INFO = """
 /dev/zram0: LABEL="zram0" UUID="c7116820-f2de-4aee-8ea6-0b23c6491598" TYPE="swap"
 """
 
+BLKID_INFO_NO_LUKS = """
+/dev/nvme0n1p1: UUID="1950-8713" BLOCK_SIZE="512" TYPE="vfat" PARTLABEL="EFI System Partition" PARTUUID="004d0ca3-373f-4d44-a085-c19c47da8b5e"
+/dev/nvme0n1p2: LABEL="BOOTFS" UUID="UVTk76-UWOc-vk7s-galL-dxIP-4UXO-0jG4MH" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="f8508c37-eeb1-4598-b084-5364d489031f"
+/dev/mapper/luks-d32e910a-c65a-4bc7-8cb8-8b0a4ec50dce: UUID="c7c45f2d-1d1b-4cf0-9d51-e2b0046682f8" TYPE="LVM2_member"
+/dev/zram0: LABEL="zram0" UUID="c7116820-f2de-4aee-8ea6-0b23c6491598" TYPE="swap"
+"""
+
 
 def test_luks_devices_listing():
+    with pytest.raises(SkipComponent):
+        luks_devices = luks_block_devices({BlockIDInfo: []})
+
+    blkid = BlockIDInfo(context_wrap(BLKID_INFO_NO_LUKS))
+    broker = {BlockIDInfo: blkid}
+    with pytest.raises(SkipComponent):
+        luks_devices = luks_block_devices(broker)
+
     blkid = BlockIDInfo(context_wrap(BLKID_INFO))
     broker = {BlockIDInfo: blkid}
 
     luks_devices = luks_block_devices(broker)
     assert set(luks_devices) == set(["/dev/loop0", "/dev/nvme0n1p3"])
+
+
+def test_luks_data_sources():
+    broker = {LocalSpecs.cryptsetup_luks_dump_commands: []}
+    with pytest.raises(SkipComponent):
+        luks_data_sources(broker)
 
 
 def test_luks1_filtering():
@@ -169,7 +201,7 @@ def test_luks2_filtering():
     command = Mock()
     command.content = LUKS2_DUMP.splitlines()
     command.cmd = "cryptsetup luksDump /dev/sda"
-    broker = {LocalSpecs.cryptsetup_luks_dump_commands: [command]}
+    broker = {LocalSpecs.cryptsetup_luks_dump_token_commands: [command]}
     result = luks_data_sources(broker)
 
     assert len(result) == 1
@@ -182,3 +214,10 @@ def test_luks2_filtering():
 
     assert "AF stripes:" in text_result
     assert "Digest ID:" in text_result
+
+    # tokens custom fields filtering
+    assert "tpm2-policy-hash" not in text_result
+    assert "tpm2-blob" not in text_result
+    assert "tpm2-primary-alg" not in text_result
+    assert "tpm2-bank" not in text_result
+    assert "tpm2-pcrs" not in text_result
