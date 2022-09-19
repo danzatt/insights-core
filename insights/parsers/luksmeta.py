@@ -4,7 +4,7 @@ luksmeta - command ``luksmeta show -d``
 This class provides parsing for the output of luksmeta <device_name>.
 """
 
-from insights import parser, Parser
+from insights import parser, Parser, SkipComponent
 from insights.specs import Specs
 
 
@@ -29,7 +29,6 @@ class LuksMeta(Parser):
     """
     Sample input data is in the format::
 
-        LUKS header information
         0   active empty
         1   active cb6e8904-81ff-40da-a84a-07ab9ab5715e
         2   active empty
@@ -72,6 +71,13 @@ class LuksMeta(Parser):
         super(LuksMeta, self).__init__(context)
 
     def parse_content(self, content):
+        if len(content) >= 1 and "Device is not initialized" in content[0]:
+            raise SkipComponent
+
+        # LUKS1 contains exactly 8 keyslots
+        if len(content) != 8:
+            raise SkipComponent
+
         for line in content:
             index, state, metadata = line.split()
             index = int(index)
