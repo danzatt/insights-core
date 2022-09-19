@@ -9,6 +9,18 @@ from insights.specs import Specs
 
 
 class KeyslotSpecification:
+    """
+    Class ``KeyslotSpecification`` describes information about a keyslot
+    collected by the ``luksmeta show`` command.
+
+
+    Attributes:
+        index (int): the index of the described keyslot
+        state (str): the state of the described keyslot
+        metadata (str): the UUID of the application that stored metadata into
+            the described keyslot
+    """
+
     def __init__(self, index, state, metadata):
         self.index = index
         self.state = state
@@ -25,8 +37,20 @@ class KeyslotSpecification:
 
 
 @parser(Specs.luksmeta)
-class LuksMeta(Parser):
+class LuksMeta(Parser, dict):
     """
+    Class ``LuksMeta`` parses the output of the ``luksmeta show -d <device>`` command.
+
+    This command prints information if the device has custom user-defined
+    metadata embedded in the keyslots (used e.g. by clevis). If the device was
+    not initialized using ``luksmeta``, the parser raises SkipComponent.
+
+    The parser can be indexed by the keyslot index (in the range 0-7).
+    A KeyslotSpecification object is returned, which describes every LUKS
+    keyslot. The KeyslotSpecification contains the ``index``, ``state`` and
+    ``metadata`` fileds. Metadata field stores the UUID of the application that
+    has stored metadata in the keyslot.
+
     Sample input data is in the format::
 
         0   active empty
@@ -43,32 +67,21 @@ class LuksMeta(Parser):
         >>> type(parsed_result)
         <class 'insights.parsers.luksmeta.LuksMeta'>
 
-        >>> parsed_result.keyslots[0].index
+        >>> parsed_result[0].index
         0
 
-        >>> parsed_result.keyslots[0].state
+        >>> parsed_result[0].state
         'active'
 
-        >>> parsed_result.keyslots[4].state
+        >>> parsed_result[4].state
         'inactive'
 
-        >>> parsed_result.keyslots[0].metadata is None
+        >>> parsed_result[0].metadata is None
         True
 
-        >>> parsed_result.keyslots[1].metadata
+        >>> parsed_result[1].metadata
         'cb6e8904-81ff-40da-a84a-07ab9ab5715e'
-
-
-    Attributes:
-        keyslots(dict): A list of 8 KeyslotSpecification objects, describing
-        every LUKS keyslot. The KeyslotSpecification contains the index, state
-        and metadata fileds. Metadata field stores the UUID of the application
-        that has stored metadata in the keyslot.
     """  # noqa
-
-    def __init__(self, context):
-        self.keyslots = [None] * 8
-        super(LuksMeta, self).__init__(context)
 
     def parse_content(self, content):
         if len(content) >= 1 and "Device is not initialized" in content[0]:
@@ -82,4 +95,4 @@ class LuksMeta(Parser):
             index, state, metadata = line.split()
             index = int(index)
             metadata = None if metadata == "empty" else metadata
-            self.keyslots[index] = KeyslotSpecification(index, state, metadata)
+            self[index] = KeyslotSpecification(index, state, metadata)
