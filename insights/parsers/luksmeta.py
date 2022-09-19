@@ -1,6 +1,6 @@
 """
-luksmeta - command ``luksmeta show``
-====================================
+luksmeta - command ``luksmeta show -d``
+=======================================
 This class provides parsing for the output of luksmeta <device_name>.
 """
 
