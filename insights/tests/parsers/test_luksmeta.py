@@ -22,7 +22,7 @@ LUKSMETA_BAD_DEVICE = "./luks2 (LUKS2) is not a LUKSv1 device"
 
 
 def test_luksmeta():
-    luksmeta_parsed = luksmeta.LuksMeta(context_wrap(LUKSMETA_OUTPUT))
+    luksmeta_parsed = luksmeta.LuksMeta(context_wrap(LUKSMETA_OUTPUT, path="/insights_commands/cryptsetup_luksDump_--disable-external-tokens_.dev.disk.by-uuid.d62357eb-ea88-4b13-b756-a24e91fbfe9a"))
 
     with pytest.raises(SkipComponent):
         luksmeta.LuksMeta(context_wrap(LUKSMETA_NOT_FOUND))
@@ -33,7 +33,10 @@ def test_luksmeta():
     with pytest.raises(SkipComponent):
         luksmeta.LuksMeta(context_wrap(LUKSMETA_BAD_DEVICE))
 
-    assert len(luksmeta_parsed) == 8
+    # 8 keyslots and 1  device UUID
+    assert len(luksmeta_parsed) == 9
+    assert "device_uuid" in luksmeta_parsed
+    assert luksmeta_parsed["device_uuid"] == "d62357eb-ea88-4b13-b756-a24e91fbfe9a"
 
     for i in range(8):
         assert luksmeta_parsed[i].index == i
@@ -47,6 +50,9 @@ def test_luksmeta():
     assert luksmeta_parsed[0].metadata is None
     assert luksmeta_parsed[1].metadata is not None
     assert luksmeta_parsed[1].metadata == "cb6e8904-81ff-40da-a84a-07ab9ab5715e"
+
+    luksmeta_parsed = luksmeta.LuksMeta(context_wrap(LUKSMETA_OUTPUT, path="/insights_commands/cryptsetup_luksDump_--disable-external-tokens_.dev.loop0"))
+    assert "device_uuid" not in luksmeta_parsed
 
 
 def test_doc_examples():

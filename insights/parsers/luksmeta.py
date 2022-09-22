@@ -84,6 +84,11 @@ class LuksMeta(Parser, dict):
     """  # noqa
 
     def parse_content(self, content):
+        filename_split = self.file_name.split(".")
+
+        if len(filename_split) >= 4 and filename_split[-4] == "dev" and filename_split[-3] == "disk" and filename_split[-2] == "by-uuid":
+            self["device_uuid"] = self.file_name.split(".")[-1] if self.file_name else None
+
         if len(content) >= 1 and "Device is not initialized" in content[0]:
             raise SkipComponent
 
