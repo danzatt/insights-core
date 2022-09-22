@@ -1,11 +1,9 @@
 import pytest
-from mock.mock import Mock
 
 from insights import SkipComponent
-from insights.parsers.blkid import BlockIDInfo
-from insights.specs.datasources.luks_devices import LocalSpecs, luks_data_sources, luks_block_devices
+from insights.parsers.cryptsetup_luksDump import LuksDump
+from insights.combiners.cryptsetup import luks1_block_devices
 from insights.tests import context_wrap
-
 
 LUKS1_DUMP = """LUKS header information for luks1
 
@@ -141,83 +139,17 @@ Digests:
 	            ca fe ba be ed 7d 09 2c 3d b6 fa f4 de ad be ef 
 """  # noqa
 
-BLKID_INFO = """
-/dev/nvme0n1p3: UUID="3676157d-f2f5-465c-a4c3-3c2a52c8d3f4" TYPE="crypto_LUKS" PARTUUID="d403bcbd-0eea-4bff-95b9-2237740f5c8b"
-/dev/nvme0n1p1: UUID="1950-8713" BLOCK_SIZE="512" TYPE="vfat" PARTLABEL="EFI System Partition" PARTUUID="004d0ca3-373f-4d44-a085-c19c47da8b5e"
-/dev/nvme0n1p2: LABEL="BOOTFS" UUID="UVTk76-UWOc-vk7s-galL-dxIP-4UXO-0jG4MH" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="f8508c37-eeb1-4598-b084-5364d489031f"
-/dev/loop0: UUID="11124c1d-990b-4277-9f74-c5a34eb2cd04" TYPE="crypto_LUKS"
-/dev/mapper/luks-d32e910a-c65a-4bc7-8cb8-8b0a4ec50dce: UUID="c7c45f2d-1d1b-4cf0-9d51-e2b0046682f8" TYPE="LVM2_member"
-/dev/zram0: LABEL="zram0" UUID="c7116820-f2de-4aee-8ea6-0b23c6491598" TYPE="swap"
-"""
 
-BLKID_INFO_NO_LUKS = """
-/dev/nvme0n1p1: UUID="1950-8713" BLOCK_SIZE="512" TYPE="vfat" PARTLABEL="EFI System Partition" PARTUUID="004d0ca3-373f-4d44-a085-c19c47da8b5e"
-/dev/nvme0n1p2: LABEL="BOOTFS" UUID="UVTk76-UWOc-vk7s-galL-dxIP-4UXO-0jG4MH" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="f8508c37-eeb1-4598-b084-5364d489031f"
-/dev/mapper/luks-d32e910a-c65a-4bc7-8cb8-8b0a4ec50dce: UUID="c7c45f2d-1d1b-4cf0-9d51-e2b0046682f8" TYPE="LVM2_member"
-/dev/zram0: LABEL="zram0" UUID="c7116820-f2de-4aee-8ea6-0b23c6491598" TYPE="swap"
-"""
+def test_luks1_devices_listing():
+    luks1_device = LuksDump(context_wrap(LUKS1_DUMP))
+    luks2_device = LuksDump(context_wrap(LUKS2_DUMP))
+    luks_devices = luks1_block_devices([luks1_device, luks2_device])
 
+    # only the LUKS1 device's UUID is returned
+    assert luks_devices == ["/dev/disk/by-uuid/263902da-5f0c-43a9-82eb-cc6f14d90448"]
 
-def test_luks_devices_listing():
     with pytest.raises(SkipComponent):
-        luks_devices = luks_block_devices({BlockIDInfo: []})
+        luks_devices = luks1_block_devices([])
 
-    blkid = BlockIDInfo(context_wrap(BLKID_INFO_NO_LUKS))
-    broker = {BlockIDInfo: blkid}
     with pytest.raises(SkipComponent):
-        luks_devices = luks_block_devices(broker)
-
-    blkid = BlockIDInfo(context_wrap(BLKID_INFO))
-    broker = {BlockIDInfo: blkid}
-
-    luks_devices = luks_block_devices(broker)
-    assert set(luks_devices) == set(["/dev/loop0", "/dev/nvme0n1p3"])
-
-
-def test_luks_data_sources():
-    broker = {LocalSpecs.cryptsetup_luks_dump_commands: []}
-    with pytest.raises(SkipComponent):
-        luks_data_sources(broker)
-
-
-def test_luks1_filtering():
-    command = Mock()
-    command.content = LUKS1_DUMP.splitlines()
-    command.cmd = "cryptsetup luksDump /dev/sda"
-    broker = {LocalSpecs.cryptsetup_luks_dump_commands: [command]}
-    result = luks_data_sources(broker)
-
-    assert len(result) == 1
-
-    text_result = "\n".join(result[0].content)
-    assert "MK digest:" not in text_result
-    assert "MK salt:" not in text_result
-    assert "MK iterations:" in text_result
-    assert "ca fe ba be" not in text_result
-    assert "de ad be ef" not in text_result
-
-
-def test_luks2_filtering():
-    command = Mock()
-    command.content = LUKS2_DUMP.splitlines()
-    command.cmd = "cryptsetup luksDump /dev/sda"
-    broker = {LocalSpecs.cryptsetup_luks_dump_token_commands: [command]}
-    result = luks_data_sources(broker)
-
-    assert len(result) == 1
-
-    text_result = "\n".join(result[0].content)
-    assert "Salt:" not in text_result
-    assert "Digest:" not in text_result
-    assert "ca fe ba be" not in text_result
-    assert "de ad be ef" not in text_result
-
-    assert "AF stripes:" in text_result
-    assert "Digest ID:" in text_result
-
-    # tokens custom fields filtering
-    assert "tpm2-policy-hash" not in text_result
-    assert "tpm2-blob" not in text_result
-    assert "tpm2-primary-alg" not in text_result
-    assert "tpm2-bank" not in text_result
-    assert "tpm2-pcrs" not in text_result
+        luks_devices = luks1_block_devices([luks2_device])

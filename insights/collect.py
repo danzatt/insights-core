@@ -259,7 +259,7 @@ plugins:
         - name: insights.components.cryptsetup
           enabled: true
 
-        - name: insights.parsers.cryptsetup_luksDump.LuksDump
+        - name: insights.combiners.cryptsetup.luks1_block_devices
           enabled: true
 """.strip()
 
