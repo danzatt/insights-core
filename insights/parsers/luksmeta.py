@@ -4,7 +4,7 @@ luksmeta - command ``luksmeta show -d <device_name>``
 This class provides parsing for the output of luksmeta <device_name>.
 """
 
-from insights import parser, Parser, SkipComponent
+from insights import parser, CommandParser
 from insights.specs import Specs
 
 
@@ -37,7 +37,7 @@ class KeyslotSpecification:
 
 
 @parser(Specs.luksmeta)
-class LuksMeta(Parser, dict):
+class LuksMeta(CommandParser, dict):
     """
     Class ``LuksMeta`` parses the output of the ``luksmeta show -d <device>`` command.
 
@@ -83,18 +83,22 @@ class LuksMeta(Parser, dict):
         'cb6e8904-81ff-40da-a84a-07ab9ab5715e'
     """  # noqa
 
+    BAD_LINES = [
+            "device is not initialized",
+            "luksmeta data appears corrupt",
+            "unknown error",
+            "invalid slot",
+            "is not a luksv1 device",
+    ]
+
+    def __init__(self, context):
+        super(LuksMeta, self).__init__(context, LuksMeta.BAD_LINES)
+
     def parse_content(self, content):
         filename_split = self.file_name.split(".")
 
         if len(filename_split) >= 4 and filename_split[-4] == "dev" and filename_split[-3] == "disk" and filename_split[-2] == "by-uuid":
             self["device_uuid"] = self.file_name.split(".")[-1] if self.file_name else None
-
-        if len(content) >= 1 and "Device is not initialized" in content[0]:
-            raise SkipComponent
-
-        # LUKS1 contains exactly 8 keyslots
-        if len(content) != 8:
-            raise SkipComponent
 
         for line in content:
             index, state, metadata = line.split()
