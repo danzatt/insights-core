@@ -1,8 +1,11 @@
+import doctest
 import pytest
 
 from insights import SkipComponent
 from insights.parsers.cryptsetup_luksDump import LuksDump
-from insights.combiners.cryptsetup import luks1_block_devices
+from insights.parsers import luksmeta
+from insights.combiners.cryptsetup import luks1_block_devices, LuksDevices
+import insights.combiners.cryptsetup
 from insights.tests import context_wrap
 
 LUKS1_DUMP = """LUKS header information for luks1
@@ -139,10 +142,24 @@ Digests:
 	            ca fe ba be ed 7d 09 2c 3d b6 fa f4 de ad be ef 
 """  # noqa
 
+LUKSMETA_OUTPUT = """0   active empty
+1   active cb6e8904-81ff-40da-a84a-07ab9ab5715e
+2   active empty
+3   active empty
+4 inactive empty
+5   active empty
+6   active cb6e8904-81ff-40da-a84a-07ab9ab5715e
+7   active cb6e8904-81ff-40da-a84a-07ab9ab5715e
+"""  # noqa
+
+luks1_device = LuksDump(context_wrap(LUKS1_DUMP))
+luks2_device = LuksDump(context_wrap(LUKS2_DUMP))
+uuid = luks1_device.dump["header"]["UUID"]
+luksmeta_parsed = luksmeta.LuksMeta(context_wrap(LUKSMETA_OUTPUT, path="/insights_commands/cryptsetup_luksDump_--disable-external-tokens_.dev.disk.by-uuid." + uuid))
+luksmeta_parsed_no_uuid = luksmeta.LuksMeta(context_wrap(LUKSMETA_OUTPUT))
+
 
 def test_luks1_devices_listing():
-    luks1_device = LuksDump(context_wrap(LUKS1_DUMP))
-    luks2_device = LuksDump(context_wrap(LUKS2_DUMP))
     luks_devices = luks1_block_devices([luks1_device, luks2_device])
 
     # only the LUKS1 device's UUID is returned
@@ -153,3 +170,32 @@ def test_luks1_devices_listing():
 
     with pytest.raises(SkipComponent):
         luks_devices = luks1_block_devices([luks2_device])
+
+
+def test_luks_devices_combiner():
+    luks_devices = LuksDevices([luks1_device, luks2_device], None)
+    for device in luks_devices:
+        assert "luksmeta" not in device
+
+    luks_devices = LuksDevices([luks1_device, luks2_device], [])
+    for device in luks_devices:
+        assert "luksmeta" not in device
+
+    luks_devices = LuksDevices([luks1_device, luks2_device], [luksmeta_parsed_no_uuid])
+    for device in luks_devices:
+        assert "luksmeta" not in device
+
+    luks_devices = LuksDevices([luks1_device, luks2_device], [luksmeta_parsed])
+    for device in luks_devices:
+        if device["header"]["UUID"] == uuid:
+            assert "luksmeta" in device
+        else:
+            assert "luksmeta" not in device
+
+
+def test_doc_examples():
+    env = {
+            'luks_devices': LuksDevices([luks1_device, luks2_device], [luksmeta_parsed])
+          }
+    failed, total = doctest.testmod(insights.combiners.cryptsetup, globs=env)
+    assert failed == 0
