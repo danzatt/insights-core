@@ -89,6 +89,8 @@ class LuksMeta(CommandParser, dict):
             "unknown error",
             "invalid slot",
             "is not a luksv1 device",
+            "invalid argument",
+            "unable to read luksv1 header"
     ]
 
     def __init__(self, context):

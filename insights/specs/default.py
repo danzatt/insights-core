@@ -32,7 +32,6 @@ from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 from insights.specs.datasources.container import running_rhel_containers
 from insights.specs.datasources.container.nginx_conf import nginx_conf as container_nginx_conf_ds
-from insights.combiners import cryptsetup
 
 
 logger = logging.getLogger(__name__)
@@ -373,7 +372,8 @@ class DefaultSpecs(Specs):
     lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
     lsscsi = simple_command("/usr/bin/lsscsi")
     lsvmbus = simple_command("/usr/sbin/lsvmbus -vv")
-    luksmeta = foreach_execute(cryptsetup.luks1_block_devices, "luksmeta show -d %s")
+    block_devices_by_uuid = listdir("/dev/disk/by-uuid/", context=HostContext)
+    luksmeta = foreach_execute(block_devices_by_uuid, "/usr/bin/luksmeta show -d /dev/disk/by-uuid/%s", keep_rc=True)
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
     lvmconfig = first_of([
         simple_command("/usr/sbin/lvmconfig --type full"),
