@@ -8,6 +8,7 @@ single dictionary.
 
 import copy
 
+from insights import SkipComponent
 from insights.core.plugins import combiner
 from insights.parsers.cryptsetup_luksDump import LuksDump
 from insights.parsers.luksmeta import LuksMeta
@@ -50,3 +51,6 @@ class LuksDevices(list):
                 luks_dump_copy["luksmeta"] = luksmeta_by_uuid[uuid]
 
             self.append(luks_dump_copy)
+
+        if not self:
+            raise SkipComponent

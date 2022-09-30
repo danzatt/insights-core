@@ -1,5 +1,7 @@
 import doctest
+import pytest
 
+from insights import SkipComponent
 from insights.parsers.cryptsetup_luksDump import LuksDump
 from insights.parsers import luksmeta
 from insights.combiners.cryptsetup import LuksDevices
@@ -158,6 +160,9 @@ luksmeta_parsed_no_uuid = luksmeta.LuksMeta(context_wrap(LUKSMETA_OUTPUT))
 
 
 def test_luks_devices_combiner():
+    with pytest.raises(SkipComponent):
+        luks_devices = LuksDevices([], None)
+
     luks_devices = LuksDevices([luks1_device, luks2_device], None)
     for device in luks_devices:
         assert "luksmeta" not in device
