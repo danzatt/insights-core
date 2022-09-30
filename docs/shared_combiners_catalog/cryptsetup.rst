@@ -1,3 +1,3 @@
 .. automodule:: insights.combiners.cryptsetup
-   :members: luks1_block_devices
+   :members: LuksDevices
    :show-inheritance:

@@ -1,10 +1,8 @@
 import doctest
-import pytest
 
-from insights import SkipComponent
 from insights.parsers.cryptsetup_luksDump import LuksDump
 from insights.parsers import luksmeta
-from insights.combiners.cryptsetup import luks1_block_devices, LuksDevices
+from insights.combiners.cryptsetup import LuksDevices
 import insights.combiners.cryptsetup
 from insights.tests import context_wrap
 
@@ -157,19 +155,6 @@ luks2_device = LuksDump(context_wrap(LUKS2_DUMP))
 uuid = luks1_device.dump["header"]["UUID"]
 luksmeta_parsed = luksmeta.LuksMeta(context_wrap(LUKSMETA_OUTPUT, path="/insights_commands/cryptsetup_luksDump_--disable-external-tokens_.dev.disk.by-uuid." + uuid))
 luksmeta_parsed_no_uuid = luksmeta.LuksMeta(context_wrap(LUKSMETA_OUTPUT))
-
-
-def test_luks1_devices_listing():
-    luks_devices = luks1_block_devices([luks1_device, luks2_device])
-
-    # only the LUKS1 device's UUID is returned
-    assert luks_devices == ["/dev/disk/by-uuid/263902da-5f0c-43a9-82eb-cc6f14d90448"]
-
-    with pytest.raises(SkipComponent):
-        luks_devices = luks1_block_devices([])
-
-    with pytest.raises(SkipComponent):
-        luks_devices = luks1_block_devices([luks2_device])
 
 
 def test_luks_devices_combiner():
